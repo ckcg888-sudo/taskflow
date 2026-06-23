@@ -1,0 +1,1761 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskFlow</title>
+  <style>
+    :root {
+      --sidebar: #ffffff;
+      --sidebar-soft: #fff7ed;
+      --active: #ffedd5;
+      --primary: #f97316;
+      --primary-soft: #fff7ed;
+      --bg: #fff7ed;
+      --panel: #ffffff;
+      --line: #dce5f0;
+      --muted: #8290aa;
+      --text: #111827;
+      --green: #16a34a;
+      --blue: #ea580c;
+      --pink: #fb923c;
+      --orange: #f97316;
+      --red: #dc2626;
+      --slate: #94a3b8;
+      --shadow: 0 1px 2px rgba(15, 23, 42, .05);
+      color-scheme: light;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; border: 0; }
+
+    body:not(.authenticated) .app { display: none; }
+    body.authenticated .login-screen { display: none; }
+
+    .login-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    }
+    .login-card {
+      width: min(440px, 100%);
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 18px 55px rgba(15, 23, 42, .08);
+      padding: 34px 32px 28px;
+    }
+    .login-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #111827;
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 26px;
+    }
+    .login-card h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 18px;
+    }
+    .login-sub {
+      text-align: center;
+      color: #94a3b8;
+      margin: 8px 0 18px;
+    }
+    .demo-box {
+      border: 1px solid #f59e0b;
+      background: #fffbeb;
+      border-radius: 9px;
+      padding: 12px 14px;
+      color: #7c4a03;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .demo-accounts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+    }
+    .demo-account {
+      min-height: 24px;
+      border-radius: 5px;
+      border: 1px solid #f59e0b;
+      background: white;
+      color: #92400e;
+      padding: 0 10px;
+      font-weight: 800;
+    }
+    .login-form { display: grid; gap: 14px; margin-top: 4px; }
+    .login-form label { color: #334155; }
+    .login-form input {
+      min-height: 43px;
+      border-radius: 9px;
+    }
+    .login-error {
+      display: none;
+      color: #dc2626;
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: 8px;
+      padding: 9px 11px;
+      font-weight: 700;
+    }
+    .login-error.show { display: block; }
+    .google-btn {
+      width: 100%;
+      min-height: 42px;
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #475569;
+      margin-top: 10px;
+      font-weight: 800;
+    }
+    .google-g { color: #f97316; font-size: 18px; margin-right: 8px; }
+    .switch-google {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      color: #c2410c;
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 218px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: var(--sidebar);
+      color: #475569;
+      border-right: 1px solid #fed7aa;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+    .brand {
+      height: 66px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      border-bottom: 1px solid #fed7aa;
+      color: #111827;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #fb923c, #ea580c);
+      color: white;
+      font-size: 17px;
+    }
+    .badge-demo {
+      font-size: 10px;
+      color: #111827;
+      background: #ffb319;
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin-left: 6px;
+    }
+    .nav {
+      padding: 16px 8px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .nav-title {
+      color: #c2410c;
+      font-size: 11px;
+      margin: 10px 6px 7px;
+    }
+    .nav-item {
+      width: 100%;
+      height: 34px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      background: transparent;
+      color: #64748b;
+      text-align: left;
+      transition: .15s ease;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: var(--active);
+      color: #9a3412;
+    }
+    .nav-icon { width: 16px; text-align: center; font-size: 15px; opacity: .9; }
+    .nav-count { margin-left: auto; font-size: 12px; color: #7080a3; }
+    .divider { border-top: 1px solid #fed7aa; margin: 14px 0; }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+    .profile {
+      border-top: 1px solid #fed7aa;
+      padding: 14px;
+    }
+    .profile-line { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #f97316;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 12px;
+      flex: 0 0 auto;
+    }
+    .avatar.small { width: 26px; height: 26px; font-size: 11px; }
+    .profile strong { color: #111827; display: block; line-height: 1.1; }
+    .profile span { color: #64748b; font-size: 12px; }
+    .logout {
+      width: 100%;
+      height: 38px;
+      border-radius: 7px;
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fdba74;
+      font-weight: 700;
+    }
+
+    .main { min-width: 0; }
+    .topbar {
+      min-height: 58px;
+      background: white;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+    }
+    .topbar h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+    .topbar .date { color: #7584a0; margin-top: 6px; font-size: 13px; }
+    .actions { display: flex; align-items: center; gap: 10px; }
+    .search {
+      width: 185px;
+      height: 42px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      color: #8290aa;
+    }
+    .search input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      width: 100%;
+      min-width: 0;
+    }
+    .btn {
+      min-height: 36px;
+      border-radius: 8px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 700;
+      color: #46566f;
+      background: #edf2f8;
+    }
+    .btn.primary { color: white; background: var(--primary); }
+    .btn.soft { color: #c2410c; background: #ffedd5; }
+    .btn.danger { color: var(--red); background: #fff1f2; }
+    .btn.green { color: #04925a; background: #e8fbf2; }
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+      filter: grayscale(.25);
+    }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #edf2f8;
+      color: #64748b;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .page {
+      display: none;
+      padding: 20px 24px 26px;
+    }
+    .page.active { display: block; }
+    .grid { display: grid; gap: 14px; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      box-shadow: var(--shadow);
+    }
+    .stat {
+      height: 136px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+    }
+    .stat strong { display: block; font-size: 31px; line-height: .9; }
+    .stat span { color: #51617b; }
+    .percent {
+      position: absolute;
+      right: 18px;
+      top: 20px;
+      background: #e7fbf1;
+      color: #00a867;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .dashboard-layout {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 270px;
+      gap: 14px;
+    }
+    .panel-head {
+      min-height: 47px;
+      border-bottom: 1px solid #edf1f6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-weight: 800;
+    }
+    .link-btn {
+      background: transparent;
+      color: #c2410c;
+      font-weight: 800;
+      padding: 0;
+    }
+    .recent { min-height: 620px; overflow: hidden; }
+    .task-row {
+      min-height: 48px;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 170px 116px 90px;
+      align-items: center;
+      gap: 14px;
+      padding: 0 18px;
+      border-bottom: 1px solid #f0f3f8;
+      background: white;
+    }
+    .task-row:hover { background: #fbfdff; }
+    .task-title { font-weight: 700; }
+    .task-meta { color: #53627b; display: flex; align-items: center; gap: 8px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .pill.waiting { color: #64748b; background: #f1f5f9; }
+    .pill.doing { color: #3b73ff; background: #edf4ff; }
+    .pill.done { color: #0bae69; background: #e8fbf2; }
+    .pill.blocked { color: #ef4444; background: #fee2e2; }
+    .pill.cancelled { color: #94a3b8; background: #f5f7fa; }
+    .side-stack { display: grid; gap: 14px; align-content: start; }
+    .team-list { padding: 10px 18px 16px; display: grid; gap: 13px; }
+    .person {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+    .person strong { display: block; font-size: 13px; }
+    .person span { color: #8390a8; font-size: 12px; }
+    .online {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+    .online.on { background: var(--green); }
+    .progress-list { padding: 14px 18px 18px; display: grid; gap: 15px; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .bar {
+      height: 5px;
+      border-radius: 999px;
+      background: #edf1f6;
+      overflow: hidden;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: var(--w, 0%);
+      background: var(--c, var(--primary));
+      border-radius: inherit;
+    }
+    .subtle { color: #8290aa; font-size: 12px; }
+
+    .filter-panel {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      height: 28px;
+      border-radius: 7px;
+      background: transparent;
+      color: #485a75;
+      padding: 0 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab.active { color: white; background: var(--primary); }
+    .count-badge {
+      background: #dde6f3;
+      color: #61708c;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+    .tab.active .count-badge { background: rgba(255,255,255,.24); color: white; }
+    .filter-row select {
+      width: 100%;
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      color: #60708b;
+      padding: 0 10px;
+    }
+    .table-head, .task-list-row {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) 120px 140px 86px 110px;
+      gap: 14px;
+      align-items: center;
+      padding: 0 44px;
+    }
+    .table-head {
+      height: 44px;
+      color: #8b99af;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .task-list-row {
+      min-height: 48px;
+      margin-bottom: 4px;
+      background: white;
+      border-radius: 7px;
+      box-shadow: var(--shadow);
+    }
+    .list-area { padding-top: 4px; }
+
+    .calendar-head {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 58px;
+      margin-bottom: 18px;
+    }
+    .calendar-title { font-size: 18px; font-weight: 900; min-width: 150px; text-align: center; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 5px;
+    }
+    .dow {
+      color: #8a98af;
+      font-size: 12px;
+      text-align: center;
+      font-weight: 900;
+      padding-bottom: 8px;
+    }
+    .day {
+      min-height: 76px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px;
+      color: #b3c1d4;
+      overflow: hidden;
+    }
+    .day.today {
+      background: #eef2ff;
+      border-color: #f97316;
+      color: #111827;
+    }
+    .day-number.today-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: inline-grid;
+      place-items: center;
+      margin: -2px 0 4px -2px;
+      font-weight: 900;
+    }
+    .event {
+      height: 18px;
+      border-radius: 4px;
+      padding: 2px 5px;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 11px;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .report-card { min-height: 225px; padding: 18px; }
+    .report-card h3 {
+      margin: 0 0 14px;
+      font-size: 15px;
+    }
+    .metric { margin: 14px 0; }
+    .metric-line {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+    .due-list { display: grid; gap: 12px; }
+    .due-item {
+      display: grid;
+      grid-template-columns: 10px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #f0f3f8;
+      padding-bottom: 10px;
+    }
+    .bullet { width: 7px; height: 7px; border-radius: 50%; }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(230px, 1fr));
+      gap: 14px;
+    }
+    .project-card {
+      padding: 18px;
+      min-height: 236px;
+    }
+    .project-head {
+      display: grid;
+      grid-template-columns: 16px 1fr auto;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+    .project-title { font-weight: 900; font-size: 15px; }
+    .project-desc { color: #8290aa; font-size: 12px; margin-top: 2px; }
+    .project-numbers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .number-box {
+      background: #f7f9fc;
+      border-radius: 7px;
+      padding: 12px;
+      color: #8290aa;
+      font-size: 12px;
+      min-height: 64px;
+    }
+    .number-box strong {
+      display: block;
+      color: #03112a;
+      font-size: 24px;
+      margin-top: 4px;
+    }
+    .project-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 34px;
+      gap: 7px;
+      margin-top: 13px;
+    }
+
+    .settings-panel { padding: 18px; }
+    .settings-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .settings-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 106px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #fbfdff;
+    }
+    .setting-section {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: 18px;
+      border-top: 1px solid #edf1f6;
+      padding: 18px 0;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 23px;
+      border-radius: 7px;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #ffedd5;
+      color: #9a3412;
+      margin: 3px;
+    }
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .role-card {
+      border: 1px solid #fed7aa;
+      border-radius: 8px;
+      background: #fffaf5;
+      padding: 12px;
+    }
+    .role-card strong { display: block; margin-bottom: 6px; }
+    .role-card span {
+      display: block;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .permission-note {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #fff7ed;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
+      font-weight: 700;
+    }
+    .users { margin-top: 14px; display: grid; gap: 8px; }
+    .user-row {
+      min-height: 62px;
+      display: grid;
+      grid-template-columns: 34px minmax(180px, 1fr) 110px 110px 90px 72px 72px 34px;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(15, 23, 42, .42);
+      z-index: 20;
+      padding: 20px;
+    }
+    .modal.open { display: grid; }
+    .dialog {
+      width: min(720px, 100%);
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      box-shadow: 0 20px 70px rgba(15, 23, 42, .25);
+      overflow: hidden;
+    }
+    .dialog-head {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid #edf1f6;
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .dialog-body { padding: 18px; display: grid; gap: 12px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    label { display: grid; gap: 6px; color: #53627b; font-weight: 800; }
+    input, select, textarea {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      min-height: 38px;
+      padding: 8px 10px;
+      color: var(--text);
+      outline-color: #9da3ff;
+      background: white;
+    }
+    textarea { min-height: 84px; resize: vertical; }
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 0 18px 18px;
+    }
+    .empty {
+      padding: 28px;
+      text-align: center;
+      color: #71809a;
+      background: white;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 1180px) {
+      .stats, .report-grid, .settings-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dashboard-layout { grid-template-columns: 1fr; }
+      .project-grid { grid-template-columns: repeat(2, minmax(230px, 1fr)); }
+      .table-head, .task-list-row { padding: 0 18px; grid-template-columns: minmax(220px, 1fr) 110px 130px 80px 100px; }
+    }
+    @media (max-width: 820px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: static; min-height: auto; }
+      .nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-bottom: 8px; }
+      .profile { display: block; }
+      .topbar { position: static; flex-wrap: wrap; padding: 14px; }
+      .page { padding: 14px; }
+      .stats, .report-grid, .settings-cards, .project-grid { grid-template-columns: 1fr; }
+      .task-row, .table-head, .task-list-row, .user-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 12px;
+        height: auto;
+      }
+      .table-head { display: none; }
+      .calendar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dow { display: none; }
+      .form-grid, .setting-section { grid-template-columns: 1fr; }
+      .role-grid { grid-template-columns: 1fr; }
+      .actions { width: 100%; }
+      .search { flex: 1; width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-mark">▦</div>
+        <span>TaskFlow</span>
+        <span class="badge-demo">DEMO</span>
+      </div>
+      <h1>ทดลองใช้งาน TaskFlow</h1>
+      <div class="login-sub">โหมดทดลอง — ใช้บัญชีตัวอย่างด้านล่างเพื่อเข้าสู่ระบบ</div>
+      <div class="demo-box">
+        <div>บัญชีทดลอง (รหัสผ่านทุกบัญชี: <strong>demo123</strong>)</div>
+        <div class="demo-accounts" id="demoAccounts"></div>
+      </div>
+      <form class="login-form" id="loginForm">
+        <div class="login-error" id="loginError">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+        <label>ชื่อผู้ใช้
+          <input id="loginUsername" autocomplete="username" placeholder="เช่น admin" required />
+        </label>
+        <label>รหัสผ่าน
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required />
+        </label>
+        <button class="btn primary" type="submit">เข้าสู่ระบบ</button>
+      </form>
+      <button class="google-btn" id="googleLogin" type="button"><span class="google-g">G</span>เข้าสู่ระบบด้วย Google</button>
+      <a class="switch-google" href="#" id="switchGoogle">เปลี่ยนบัญชี Google</a>
+    </div>
+  </section>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">▦</div>
+        <div>TaskFlow</div>
+        <span class="badge-demo">DEMO</span>
+      </div>
+      <nav class="nav">
+        <div class="nav-title">เมนูหลัก</div>
+        <button class="nav-item active" data-page="dashboard"><span class="nav-icon">▦</span>ภาพรวม</button>
+        <button class="nav-item" data-page="tasks"><span class="nav-icon">≡</span>งานทั้งหมด</button>
+        <button class="nav-item" data-page="calendar"><span class="nav-icon">□</span>ปฏิทินงาน</button>
+        <button class="nav-item" data-page="reports"><span class="nav-icon">▥</span>รายงาน</button>
+        <div class="divider"></div>
+        <div class="nav-title">จัดการ</div>
+        <button class="nav-item" data-page="projects"><span class="nav-icon">▱</span>จัดการโปรเจกต์</button>
+        <button class="nav-item" data-page="settings"><span class="nav-icon">☼</span>ตั้งค่า</button>
+        <div class="divider"></div>
+        <div class="nav-title">โปรเจกต์</div>
+        <div id="projectNav"></div>
+      </nav>
+      <div class="profile">
+        <div class="profile-line">
+          <div class="avatar">M</div>
+          <div><strong>mgot54321</strong><span>Admin</span></div>
+        </div>
+        <button class="logout">⇱ ออกจากระบบ</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">สวัสดีตอนเช้า</h1>
+          <div class="date" id="pageSub">23 มิถุนายน 2026</div>
+        </div>
+        <div class="actions" id="topActions"></div>
+      </header>
+
+      <section class="page active" id="dashboard"></section>
+      <section class="page" id="tasks"></section>
+      <section class="page" id="calendar"></section>
+      <section class="page" id="reports"></section>
+      <section class="page" id="projects"></section>
+      <section class="page" id="settings"></section>
+    </main>
+  </div>
+
+  <div class="modal" id="taskModal" aria-hidden="true">
+    <form class="dialog" id="taskForm">
+      <div class="dialog-head">
+        <span id="modalTitle">เพิ่มงานใหม่</span>
+        <button type="button" class="icon-btn" data-close>×</button>
+      </div>
+      <div class="dialog-body">
+        <input type="hidden" id="taskId" />
+        <label>ชื่องาน
+          <input id="taskTitle" required placeholder="ระบุชื่องาน" />
+        </label>
+        <div class="form-grid">
+          <label>โปรเจกต์
+            <select id="taskProject"></select>
+          </label>
+          <label>ผู้รับผิดชอบ
+            <select id="taskOwner"></select>
+          </label>
+          <label>กำหนดส่ง
+            <input type="date" id="taskDue" required />
+          </label>
+          <label>สถานะ
+            <select id="taskStatus"></select>
+          </label>
+          <label>ความสำคัญ
+            <select id="taskPriority"></select>
+          </label>
+        </div>
+        <label>รายละเอียด
+          <textarea id="taskNotes" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn danger" id="deleteTaskBtn">ลบงาน</button>
+        <button type="button" class="btn" data-close>ยกเลิก</button>
+        <button class="btn primary" type="submit">บันทึกงาน</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal" id="userModal" aria-hidden="true">
+    <form class="dialog" id="userForm">
+      <div class="dialog-head">
+        <span id="userModalTitle">เพิ่มผู้ใช้</span>
+        <button type="button" class="icon-btn" data-user-close>×</button>
+      </div>
+      <div class="dialog-body">
+        <input type="hidden" id="userId" />
+        <div class="form-grid">
+          <label>ชื่อพนักงาน
+            <input id="userName" required placeholder="ระบุชื่อพนักงาน" />
+          </label>
+          <label>อีเมล
+            <input id="userEmail" type="email" required placeholder="name@example.com" />
+          </label>
+          <label>บทบาท
+            <select id="userRole">
+              <option>Admin</option>
+              <option>Manager</option>
+              <option>Staff</option>
+              <option>Guest</option>
+            </select>
+          </label>
+          <label>โปรเจกต์หลัก
+            <select id="userProject"></select>
+          </label>
+          <label>สีประจำตัว
+            <input id="userColor" type="color" value="#f97316" />
+          </label>
+          <label>สถานะออนไลน์
+            <select id="userOnline">
+              <option value="false">ออฟไลน์</option>
+              <option value="true">ออนไลน์</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn" data-user-close>ยกเลิก</button>
+        <button class="btn primary" type="submit">บันทึกผู้ใช้</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const TH_MONTHS = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+    const STATUSES = [
+      ["waiting", "รอดำเนินการ"],
+      ["doing", "กำลังดำเนินการ"],
+      ["done", "เสร็จแล้ว"],
+      ["blocked", "ติดปัญหา"],
+      ["cancelled", "ยกเลิก"]
+    ];
+    const PRIORITIES = [["high", "สูง"], ["medium", "ปานกลาง"], ["low", "ต่ำ"]];
+    const COLORS = ["#f97316", "#fb923c", "#ea580c", "#fdba74", "#c2410c", "#f59e0b"];
+    const PROJECT_DESCS = {
+      "ฝ่ายขาย": "งานขายและบริการลูกค้า",
+      "ฝ่าย IT": "เทคโนโลยีสารสนเทศและระบบ",
+      "การตลาด": "การตลาดและสื่อสารองค์กร",
+      "ปฏิบัติการ": "งานปฏิบัติการและวางแผนธุรกิจ",
+      "6": "งานทั่วไป",
+      "Test": "ccxxxx"
+    };
+    const APP_DATA_VERSION = "taskflow-empty-start-2026-06-23-final";
+    const AUTH_USERS = [
+      { username: "admin", name: "mgot54321", email: "mgot54321@gmail.com", role: "Admin", color: "#f97316" },
+      { username: "manager", name: "Manager Demo", email: "manager@demo.taskflow", role: "Manager", color: "#fb923c" },
+      { username: "staff", name: "Staff Demo", email: "staff@demo.taskflow", role: "Staff", color: "#ea580c" },
+      { username: "staff2", name: "Staff Demo 2", email: "staff2@demo.taskflow", role: "Staff", color: "#c2410c" }
+    ];
+    const ROLE_RULES = {
+      Admin: {
+        label: "ผู้ดูแลระบบ",
+        summary: "จัดการผู้ใช้ งาน โปรเจกต์ รายงาน และตั้งค่าทั้งหมด",
+        permissions: ["viewAll", "manageUsers", "manageProjects", "manageTasks", "deleteData", "exportData"]
+      },
+      Manager: {
+        label: "หัวหน้างาน",
+        summary: "จัดการงานและโปรเจกต์ ดูรายงานและรายชื่อพนักงาน แต่ไม่ลบผู้ใช้",
+        permissions: ["viewAll", "manageProjects", "manageTasks", "exportData"]
+      },
+      Staff: {
+        label: "พนักงาน",
+        summary: "ดูและแก้ไขเฉพาะงานที่ตัวเองรับผิดชอบ เพิ่มงานให้ตัวเองได้",
+        permissions: ["viewOwn", "manageOwnTasks"]
+      },
+      Guest: {
+        label: "ผู้เยี่ยมชม",
+        summary: "ดูข้อมูลอย่างเดียว ไม่สามารถเพิ่ม แก้ไข หรือลบข้อมูล",
+        permissions: ["viewAll"]
+      }
+    };
+    const DEFAULT_PEOPLE = [];
+    const DEFAULT_TASKS = [];
+
+    initializeStorageVersion();
+
+    const state = {
+      page: "dashboard",
+      month: 5,
+      year: 2026,
+      filters: { status: "all", priority: "all", owner: "all", project: "all", due: "all", search: "" },
+      tasks: loadTasks(),
+      projects: loadProjects(),
+      people: loadPeople(),
+      currentUser: loadCurrentUser()
+    };
+
+    function initializeStorageVersion() {
+      if (localStorage.getItem("taskflow.version") === APP_DATA_VERSION) return;
+      localStorage.removeItem("taskflow.tasks");
+      localStorage.removeItem("taskflow.people");
+      localStorage.setItem("taskflow.version", APP_DATA_VERSION);
+    }
+    function loadCurrentUser() {
+      const saved = sessionStorage.getItem("taskflow.currentUser");
+      if (!saved) return null;
+      try {
+        const user = JSON.parse(saved);
+        return AUTH_USERS.find(auth => auth.username === user.username) || null;
+      } catch (error) {
+        sessionStorage.removeItem("taskflow.currentUser");
+        return null;
+      }
+    }
+    function loadTasks() {
+      const saved = localStorage.getItem("taskflow.tasks");
+      if (saved) return JSON.parse(saved);
+      return DEFAULT_TASKS.map((task, index) => ({ id: crypto.randomUUID(), ...task, createdAt: Date.now() + index }));
+    }
+    function loadProjects() {
+      const saved = localStorage.getItem("taskflow.projects");
+      if (saved) return JSON.parse(saved);
+      return ["ฝ่ายขาย", "ฝ่าย IT", "การตลาด", "ปฏิบัติการ", "6", "Test"].map((name, index) => ({
+        id: crypto.randomUUID(),
+        name,
+        desc: PROJECT_DESCS[name] || "",
+        color: COLORS[index % COLORS.length],
+        active: true
+      }));
+    }
+    function loadPeople() {
+      const saved = localStorage.getItem("taskflow.people");
+      if (saved) return JSON.parse(saved);
+      return DEFAULT_PEOPLE.map(person => ({ id: crypto.randomUUID(), active: true, ...person }));
+    }
+    function save() {
+      localStorage.setItem("taskflow.tasks", JSON.stringify(state.tasks));
+      localStorage.setItem("taskflow.projects", JSON.stringify(state.projects));
+      localStorage.setItem("taskflow.people", JSON.stringify(state.people));
+    }
+    function $$(selector, root = document) { return Array.from(root.querySelectorAll(selector)); }
+    function currentRole() { return state.currentUser?.role || "Guest"; }
+    function can(permission) {
+      return Boolean(ROLE_RULES[currentRole()]?.permissions.includes(permission));
+    }
+    function canManageUsers() { return can("manageUsers"); }
+    function canManageProjects() { return can("manageProjects"); }
+    function canExportData() { return can("exportData"); }
+    function canCreateTask() { return can("manageTasks") || can("manageOwnTasks"); }
+    function canEditTask(task) {
+      if (can("manageTasks")) return true;
+      if (can("manageOwnTasks")) return task?.owner === state.currentUser?.name;
+      return false;
+    }
+    function visibleTasks(tasks = state.tasks) {
+      if (can("viewAll") || can("manageTasks")) return tasks;
+      if (can("viewOwn") || can("manageOwnTasks")) return tasks.filter(task => task.owner === state.currentUser?.name);
+      return [];
+    }
+    function roleNotice() {
+      const rule = ROLE_RULES[currentRole()];
+      return `<div class="permission-note">บทบาทปัจจุบัน: ${currentRole()} — ${rule?.summary || "ดูข้อมูลอย่างเดียว"}</div>`;
+    }
+    function statusLabel(value) { return STATUSES.find(s => s[0] === value)?.[1] || value; }
+    function priorityLabel(value) { return PRIORITIES.find(p => p[0] === value)?.[1] || value; }
+    function initials(name) { return name.trim().split(/\s+/).map(part => part[0]).join("").slice(0, 2); }
+    function colorForProject(name) { return state.projects.find(p => p.name === name)?.color || "#94a3b8"; }
+    function personFor(name) { return state.people.find(p => p.name === name) || { name, color: "#94a3b8", role: "Staff" }; }
+    function dateText(iso, withYear = false) {
+      const date = new Date(iso + "T00:00:00");
+      return `${date.getDate()} ${TH_MONTHS[date.getMonth()].slice(0, 3)}.${withYear ? " " + date.getFullYear() : ""}`;
+    }
+    function fullDateTitle() {
+      return `23 ${TH_MONTHS[5]} 2026`;
+    }
+    function statusCounts() {
+      const counts = Object.fromEntries(STATUSES.map(([key]) => [key, 0]));
+      visibleTasks().forEach(task => counts[task.status]++);
+      counts.all = visibleTasks().length;
+      return counts;
+    }
+    function donePercent(tasks = visibleTasks()) {
+      if (!tasks.length) return 0;
+      return Math.round(tasks.filter(t => t.status === "done").length / tasks.length * 100);
+    }
+    function projectStats(name) {
+      const tasks = visibleTasks().filter(t => t.project === name);
+      const done = tasks.filter(t => t.status === "done").length;
+      return { total: tasks.length, done, percent: tasks.length ? Math.round(done / tasks.length * 100) : 0 };
+    }
+    function isOverdue(task) {
+      return task.status !== "done" && task.status !== "cancelled" && task.due < "2026-06-23";
+    }
+    function isSoon(task) {
+      const today = new Date("2026-06-23T00:00:00");
+      const due = new Date(task.due + "T00:00:00");
+      const diff = Math.round((due - today) / 86400000);
+      return diff >= 0 && diff <= 7 && task.status !== "done" && task.status !== "cancelled";
+    }
+
+    function renderShell() {
+      const user = state.currentUser || AUTH_USERS[0];
+      document.querySelector(".profile-line .avatar").textContent = initials(user.name);
+      document.querySelector(".profile-line .avatar").style.background = user.color;
+      document.querySelector(".profile-line strong").textContent = user.name;
+      document.querySelector(".profile-line span").textContent = user.role;
+
+      const projectNav = document.getElementById("projectNav");
+      projectNav.innerHTML = state.projects.map(project => {
+        const stats = projectStats(project.name);
+        return `<button class="nav-item" data-project-filter="${project.name}">
+          <span class="dot" style="background:${project.color}"></span>${project.name}
+          <span class="nav-count">${stats.total}</span>
+        </button>`;
+      }).join("");
+
+      $$(".nav-item[data-page]").forEach(btn => btn.classList.toggle("active", btn.dataset.page === state.page));
+      $$(".nav-item[data-project-filter]").forEach(btn => {
+        btn.onclick = () => {
+          state.page = "tasks";
+          state.filters.project = btn.dataset.projectFilter;
+          render();
+        };
+      });
+    }
+
+    function setTopbar(title, sub = "", actions = "") {
+      document.getElementById("pageTitle").textContent = title;
+      document.getElementById("pageSub").textContent = sub;
+      document.getElementById("pageSub").style.display = sub ? "block" : "none";
+      document.getElementById("topActions").innerHTML = actions;
+      const add = document.getElementById("addTaskTop");
+      if (add) add.onclick = () => openTaskModal();
+      const reset = document.getElementById("resetData");
+      if (reset) reset.onclick = resetData;
+    }
+
+    function avatar(name, size = "") {
+      const p = personFor(name);
+      return `<span class="avatar ${size}" style="background:${p.color}">${initials(name)}</span>`;
+    }
+    function taskStatusPill(status) {
+      return `<span class="pill ${status}">${statusLabel(status)}</span>`;
+    }
+    function taskRow(task) {
+      return `<div class="task-row" data-task-id="${task.id}">
+        <div class="task-title">${task.title}</div>
+        <div class="task-meta">${avatar(task.owner, "small")} ${task.owner}</div>
+        <div class="task-meta">${dateText(task.due)}</div>
+        <div>${taskStatusPill(task.status)}</div>
+      </div>`;
+    }
+
+    function renderDashboard() {
+      setTopbar("สวัสดีตอนเช้า", fullDateTitle());
+      const counts = statusCounts();
+      const recent = [...visibleTasks()].sort((a,b) => a.due.localeCompare(b.due)).slice(0, 5);
+      const teamHtml = state.people.map(person => {
+        const tasksLeft = state.tasks.filter(t => t.owner === person.name && t.status !== "done").length;
+        return `<div class="person">
+          <span class="avatar" style="background:${person.color}">${initials(person.name)}</span>
+          <div><strong>${person.name}</strong><span>${tasksLeft} งานที่ยังค้าง</span></div>
+          <i class="online ${person.online ? "on" : ""}"></i>
+        </div>`;
+      }).join("");
+      document.getElementById("dashboard").innerHTML = `
+        <div class="grid stats">
+          ${statCard("▦", counts.all, "งานทั้งหมด", "#fff7ed", "#f97316")}
+          ${statCard("◴", counts.doing, "กำลังดำเนินการ", "#ffedd5", "#ea580c")}
+          ${statCard("✓", counts.done, "เสร็จแล้ว", "#e8fbf2", "#10b981", `${donePercent()}%`)}
+          ${statCard("×", counts.blocked, "ติดปัญหา", "#fff1f2", "#ef4444")}
+        </div>
+        <div class="dashboard-layout">
+          <div class="panel recent">
+            <div class="panel-head"><span>งานล่าสุด</span><button class="link-btn" data-go-tasks>ดูทั้งหมด</button></div>
+            ${roleNotice()}
+            ${recent.map(taskRow).join("") || empty("ยังไม่มีงาน")}
+          </div>
+          <div class="side-stack">
+            <div class="panel"><div class="panel-head">ทีมงาน</div><div class="team-list">${teamHtml}</div></div>
+            <div class="panel"><div class="panel-head">สรุปตามโปรเจกต์</div><div class="progress-list">${projectProgressHtml()}</div></div>
+          </div>
+        </div>`;
+      document.querySelector("[data-go-tasks]").onclick = () => { state.page = "tasks"; render(); };
+      bindTaskOpen();
+    }
+    function statCard(icon, value, label, bg, color, percent = "") {
+      return `<div class="panel stat">
+        ${percent ? `<span class="percent">${percent}</span>` : ""}
+        <div class="stat-icon" style="background:${bg};color:${color}">${icon}</div>
+        <div><strong>${value}</strong><span>${label}</span></div>
+      </div>`;
+    }
+    function projectProgressHtml() {
+      return state.projects.map(project => {
+        const stats = projectStats(project.name);
+        return `<div>
+          <div class="progress-label"><span>${project.name}</span><span>${stats.percent}%</span></div>
+          <div class="bar"><i style="--w:${stats.percent}%;--c:${project.color}"></i></div>
+          <div class="subtle">${stats.done}/${stats.total} เสร็จ</div>
+        </div>`;
+      }).join("");
+    }
+
+    function filteredTasks() {
+      return visibleTasks().filter(task => {
+        const f = state.filters;
+        const matchesStatus = f.status === "all" || task.status === f.status;
+        const matchesPriority = f.priority === "all" || task.priority === f.priority;
+        const matchesOwner = f.owner === "all" || task.owner === f.owner;
+        const matchesProject = f.project === "all" || task.project === f.project;
+        const matchesSearch = !f.search || task.title.toLowerCase().includes(f.search.toLowerCase());
+        let matchesDue = true;
+        if (f.due === "overdue") matchesDue = isOverdue(task);
+        if (f.due === "soon") matchesDue = isSoon(task);
+        if (f.due === "done") matchesDue = task.status === "done";
+        return matchesStatus && matchesPriority && matchesOwner && matchesProject && matchesSearch && matchesDue;
+      });
+    }
+    function renderTasks() {
+      setTopbar("งานทั้งหมด", "", `
+        <div class="search">⌕ <input id="searchInput" placeholder="ค้นหางาน..." value="${state.filters.search}"></div>
+        <button class="btn primary" id="addTaskTop" ${canCreateTask() ? "" : "disabled"}>＋ เพิ่มงานใหม่</button>`);
+      const counts = statusCounts();
+      const tasks = filteredTasks().sort((a,b) => a.due.localeCompare(b.due));
+      document.getElementById("tasks").innerHTML = `
+        <div class="filter-panel">
+          <div class="tabs">
+            ${[["all","ทั้งหมด"], ...STATUSES].map(([key,label]) => `<button class="tab ${state.filters.status === key ? "active" : ""}" data-status="${key}">${label} <span class="count-badge">${counts[key] || 0}</span></button>`).join("")}
+          </div>
+          ${filterSelect("priority", "ความสำคัญ", [["all","ทั้งหมด"], ...PRIORITIES])}
+          ${filterSelect("owner", "ผู้รับผิดชอบ", [["all","ทั้งหมด"], ...state.people.map(p => [p.name, p.name])])}
+          ${filterSelect("project", "โปรเจกต์", [["all","ทั้งหมด"], ...state.projects.map(p => [p.name, p.name])])}
+          ${filterSelect("due", "วันกำหนด", [["all","ทั้งหมด"], ["soon","ใกล้ครบกำหนด"], ["overdue","เกินกำหนด"], ["done","เสร็จแล้ว"]])}
+        </div>
+        <div class="table-head"><span>ชื่องาน</span><span>โปรเจกต์</span><span>ผู้รับผิดชอบ</span><span>กำหนด</span><span>สถานะ</span></div>
+        ${roleNotice()}
+        <div class="list-area">${tasks.map(taskListRow).join("") || empty("ไม่พบงานตามตัวกรอง")}</div>`;
+      $$(".tab").forEach(tab => tab.onclick = () => { state.filters.status = tab.dataset.status; renderTasks(); });
+      $$(".filter-row select").forEach(select => select.onchange = e => { state.filters[e.target.dataset.filter] = e.target.value; renderTasks(); });
+      document.getElementById("searchInput").oninput = e => { state.filters.search = e.target.value; renderTasks(); };
+      bindTaskOpen();
+    }
+    function filterSelect(key, label, options) {
+      return `<div class="filter-row"><select data-filter="${key}" aria-label="${label}">
+        ${options.map(([value, text]) => `<option value="${value}" ${state.filters[key] === value ? "selected" : ""}>${label}: ${text}</option>`).join("")}
+      </select></div>`;
+    }
+    function taskListRow(task) {
+      return `<div class="task-list-row" data-task-id="${task.id}">
+        <div class="task-title">${task.title}</div>
+        <div>${task.project}</div>
+        <div class="task-meta">${avatar(task.owner, "small")} ${task.owner}</div>
+        <div>${dateText(task.due)}</div>
+        <div>${taskStatusPill(task.status)}</div>
+      </div>`;
+    }
+
+    function renderCalendar() {
+      setTopbar(`${TH_MONTHS[state.month]} ${state.year}`, "", `
+        <button class="icon-btn" id="prevMonth">‹</button>
+        <button class="icon-btn" id="nextMonth">›</button>`);
+      const first = new Date(state.year, state.month, 1);
+      const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+      const offset = first.getDay();
+      let cells = "";
+      for (let i = 0; i < offset; i++) cells += `<div class="day"></div>`;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const iso = `${state.year}-${String(state.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const dayTasks = visibleTasks().filter(t => t.due === iso);
+        const today = iso === "2026-06-23";
+        cells += `<div class="day ${today ? "today" : ""}">
+          <span class="day-number ${today ? "today-num" : ""}">${day}</span>
+          ${dayTasks.map(t => `<div class="event" style="background:${colorForProject(t.project)}18;color:${colorForProject(t.project)}">${t.title}</div>`).join("")}
+        </div>`;
+      }
+      document.getElementById("calendar").innerHTML = `<div class="calendar-grid">
+        ${["อา.","จ.","อ.","พ.","พฤ.","ศ.","ส."].map(d => `<div class="dow">${d}</div>`).join("")}
+        ${cells}
+      </div>`;
+      document.getElementById("prevMonth").onclick = () => { state.month--; if (state.month < 0) { state.month = 11; state.year--; } renderCalendar(); };
+      document.getElementById("nextMonth").onclick = () => { state.month++; if (state.month > 11) { state.month = 0; state.year++; } renderCalendar(); };
+    }
+
+    function renderReports() {
+      setTopbar("รายงาน");
+      const counts = statusCounts();
+      const statusMax = Math.max(...STATUSES.map(([s]) => counts[s]), 1);
+      const scopedTasks = visibleTasks();
+      const priorityCounts = Object.fromEntries(PRIORITIES.map(([key]) => [key, scopedTasks.filter(t => t.priority === key).length]));
+      const priorityMax = Math.max(...Object.values(priorityCounts), 1);
+      const soon = scopedTasks.filter(isSoon);
+      const overdue = scopedTasks.filter(isOverdue);
+      const byOwner = state.people.map(person => {
+        const tasks = scopedTasks.filter(t => t.owner === person.name);
+        const done = tasks.filter(t => t.status === "done").length;
+        return { person, total: tasks.length, done, percent: tasks.length ? Math.round(done / tasks.length * 100) : 0 };
+      });
+      document.getElementById("reports").innerHTML = `<div class="report-grid">
+        <div class="panel report-card"><h3>จำนวนงานตามสถานะ</h3>
+          ${STATUSES.filter(([s]) => s !== "blocked").map(([s,label]) => metric(label, counts[s], Math.round(counts[s] / statusMax * 100), statusColor(s))).join("")}
+        </div>
+        <div class="panel report-card"><h3>จำนวนงานตามความสำคัญ</h3>
+          ${PRIORITIES.map(([p,label]) => metric(label, priorityCounts[p], Math.round(priorityCounts[p] / priorityMax * 100), priorityColor(p))).join("")}
+        </div>
+        <div class="panel report-card"><h3>งานตามโปรเจกต์</h3>${projectProgressHtml()}</div>
+        <div class="panel report-card"><h3>งานใกล้ครบกำหนด <span style="color:#f59e0b">(7 วัน)</span></h3>${dueList(soon, "#f59e0b")}</div>
+        <div class="panel report-card"><h3>งานเกินกำหนด <span style="color:#ef4444">(ต้องแก้ไขด่วน)</span></h3>${dueList(overdue, "#ef4444")}</div>
+        <div class="panel report-card"><h3>งานตามผู้รับผิดชอบ</h3>
+          ${byOwner.map(item => `<div class="metric">
+            <div class="metric-line"><span>${avatar(item.person.name, "small")} ${item.person.name}</span><span>${item.done}/${item.total} &nbsp; ${item.percent}%</span></div>
+            <div class="bar"><i style="--w:${item.percent}%;--c:${item.person.color}"></i></div>
+          </div>`).join("")}
+        </div>
+      </div>`;
+    }
+    function metric(label, count, width, color) {
+      return `<div class="metric"><div class="metric-line"><span>${label}</span><span>${count}</span></div><div class="bar"><i style="--w:${width}%;--c:${color}"></i></div></div>`;
+    }
+    function dueList(tasks, color) {
+      return `<div class="due-list">${tasks.map(t => `<div class="due-item">
+        <span class="bullet" style="background:${color}"></span>
+        <div><strong>${t.title}</strong><div class="subtle">กำหนด: ${dateText(t.due)}</div></div>
+        ${taskStatusPill(t.status)}
+      </div>`).join("") || empty("ไม่มีรายการ")}</div>`;
+    }
+    function statusColor(status) {
+      return { waiting: "#94a3b8", doing: "#f97316", done: "#16a34a", cancelled: "#94a3b8", blocked: "#dc2626" }[status];
+    }
+    function priorityColor(priority) {
+      return { high: "#ef4444", medium: "#f59e0b", low: "#10b981" }[priority];
+    }
+
+    function renderProjects() {
+      setTopbar("จัดการโปรเจกต์", "", `<button class="btn soft" id="resetData" ${canManageUsers() ? "" : "disabled"}>รีเฟรชข้อมูล</button><button class="btn primary" id="newProject" ${canManageProjects() ? "" : "disabled"}>＋ เพิ่มโปรเจกต์</button>`);
+      document.getElementById("projects").innerHTML = `${roleNotice()}<div class="project-grid">
+        ${state.projects.map(project => {
+          const stats = projectStats(project.name);
+          return `<div class="panel project-card">
+            <div class="project-head">
+              <span class="dot" style="background:${project.color};width:14px;height:14px"></span>
+              <div><div class="project-title">${project.name}</div><div class="project-desc">${project.desc}</div></div>
+              <span class="pill done">เปิดใช้งาน</span>
+            </div>
+            <div class="project-numbers">
+              <div class="number-box">งานทั้งหมด<strong>${stats.total}</strong></div>
+              <div class="number-box">เสร็จแล้ว<strong style="color:#10b981">${stats.done}</strong></div>
+            </div>
+            <div class="progress-label"><span>ความคืบหน้า</span><span>${stats.percent}%</span></div>
+            <div class="bar"><i style="--w:${stats.percent}%;--c:${project.color}"></i></div>
+            <div class="project-actions">
+              <button class="btn soft" data-edit-project="${project.id}" ${canManageProjects() ? "" : "disabled"}>แก้ไข</button>
+              <button class="btn" ${canManageProjects() ? "" : "disabled"}>ปิดใช้งาน</button>
+              <button class="btn danger" data-delete-project="${project.id}" ${canManageProjects() ? "" : "disabled"}>ถัง</button>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>`;
+      document.getElementById("newProject").onclick = () => { if (canManageProjects()) addProject(); };
+      $$("[data-delete-project]").forEach(btn => btn.onclick = () => deleteProject(btn.dataset.deleteProject));
+      $$("[data-edit-project]").forEach(btn => btn.onclick = () => editProject(btn.dataset.editProject));
+    }
+
+    function renderSettings() {
+      const user = state.currentUser || AUTH_USERS[0];
+      setTopbar("ตั้งค่า — จัดการผู้ใช้", "", `<button class="btn primary" id="addUserTop" ${canManageUsers() ? "" : "disabled"}>＋ เพิ่มผู้ใช้</button>`);
+      document.getElementById("settings").innerHTML = `<div class="panel settings-panel">
+        <div><strong>แผงผู้ดูแลระบบ</strong><h2 style="margin:4px 0 8px;font-size:18px">ระบบและการแจ้งเตือน</h2>
+          <span class="chip">${user.email}</span><span class="chip">${user.role}</span></div>
+        <div class="settings-cards">
+          ${settingCard("อีเมลแจ้งเตือน", "ปิดใช้งาน", "Quota เหลือ -", "#f97316")}
+          ${settingCard("เตือนงานรายวัน", "ยังไม่ติดตั้ง", "ยังไม่มี trigger รายวัน", "#f97316")}
+          ${settingCard("สำรองข้อมูลรายวัน", "ยังไม่ติดตั้ง", "กดติดตั้งเพื่อเปิด backup", "#f97316")}
+          ${settingCard("การบังคับสิทธิ์", "เปิดใช้งาน", "ผู้ใช้มีสิทธิ์ตามบทบาท", "#10b981")}
+        </div>
+        <div class="setting-section"><div><strong>อีเมลและการแจ้งเตือน</strong><div class="subtle" style="color:#f59e0b">ฟีเจอร์นี้พร้อมใช้ในระบบจริง</div></div>
+          <div><button class="btn">Ⅱ เปิด/ปิดอีเมล</button> <button class="btn">✈ ส่งอีเมลทดสอบ</button> <button class="btn">◴ ติดตั้งเตือนรายวัน</button> <button class="btn">⚡ ส่งเตือนตอนนี้</button></div>
+        </div>
+        <div class="setting-section"><div><strong>ข้อมูลและสำรอง</strong><div class="subtle" style="color:#f59e0b">Export CSV เปิดปกติ</div></div>
+          <div><button class="btn" ${canManageUsers() ? "" : "disabled"}>▤ สำรองข้อมูลตอนนี้</button> <button class="btn" ${canManageUsers() ? "" : "disabled"}>◴ ติดตั้ง backup รายวัน</button> <button class="btn soft" ${canManageUsers() ? "" : "disabled"}>◉ เก็บประวัติเก่า</button> <button class="btn soft" id="exportTasks" ${canExportData() ? "" : "disabled"}>↓ Export งาน CSV</button></div>
+        </div>
+        <div class="setting-section"><div><strong>สิทธิ์และบทบาท</strong><div class="subtle">กำหนดระดับการเข้าถึงระบบ</div></div>
+          <div>
+            <div class="role-grid">
+              ${Object.entries(ROLE_RULES).map(([role, rule]) => `<div class="role-card"><strong>${role} — ${rule.label}</strong><span>${rule.summary}</span></div>`).join("")}
+            </div>
+            ${roleNotice()}
+          </div>
+        </div>
+      </div>
+      <div class="users">${state.people.map(userRow).join("")}</div>`;
+      document.getElementById("exportTasks").onclick = () => { if (canExportData()) exportCsv(); };
+      document.getElementById("addUserTop").onclick = () => { if (canManageUsers()) openUserModal(); };
+      $$("[data-edit-user]").forEach(btn => btn.onclick = () => openUserModal(state.people.find(p => p.id === btn.dataset.editUser)));
+      $$("[data-delete-user]").forEach(btn => btn.onclick = () => deleteUser(btn.dataset.deleteUser));
+    }
+    function settingCard(title, main, sub, color) {
+      return `<div class="settings-card"><div><strong>${title}</strong></div><div><h3 style="margin:0;color:${color}">${main}</h3><span class="subtle">${sub}</span></div></div>`;
+    }
+    function userRow(person) {
+      const total = state.tasks.filter(t => t.owner === person.name).length;
+      return `<div class="user-row">
+        <span class="avatar" style="background:${person.color}">${initials(person.name)}</span>
+        <div><strong>${person.name}</strong><div class="subtle">${person.email}</div></div>
+        <span class="chip">${person.role}</span><span>${person.project}</span><span class="pill done">เปิดใช้งาน</span>
+        <span class="pill waiting">${total} งาน</span><button class="btn soft" data-edit-user="${person.id}" ${canManageUsers() ? "" : "disabled"}>แก้ไข</button><button class="btn danger" data-delete-user="${person.id}" ${canManageUsers() ? "" : "disabled"}>ถัง</button>
+      </div>`;
+    }
+
+    function openTaskModal(task = null) {
+      if (task && !canEditTask(task)) {
+        alert("บทบาทนี้แก้ไขงานนี้ไม่ได้");
+        return;
+      }
+      if (!task && !canCreateTask()) {
+        alert("บทบาทนี้เพิ่มงานไม่ได้");
+        return;
+      }
+      document.getElementById("modalTitle").textContent = task ? "แก้ไขงาน" : "เพิ่มงานใหม่";
+      document.getElementById("taskId").value = task?.id || "";
+      document.getElementById("taskTitle").value = task?.title || "";
+      document.getElementById("taskProject").innerHTML = state.projects.map(p => `<option ${task?.project === p.name ? "selected" : ""}>${p.name}</option>`).join("");
+      const availableOwners = can("manageTasks") ? state.people : state.people.filter(person => person.name === state.currentUser?.name);
+      document.getElementById("taskOwner").innerHTML = availableOwners.length
+        ? availableOwners.map(p => `<option ${task?.owner === p.name ? "selected" : ""}>${p.name}</option>`).join("")
+        : `<option value="">เพิ่มพนักงานก่อนสร้างงาน</option>`;
+      document.getElementById("taskDue").value = task?.due || "2026-06-30";
+      document.getElementById("taskStatus").innerHTML = STATUSES.map(([v, l]) => `<option value="${v}" ${task?.status === v ? "selected" : ""}>${l}</option>`).join("");
+      document.getElementById("taskPriority").innerHTML = PRIORITIES.map(([v, l]) => `<option value="${v}" ${task?.priority === v ? "selected" : ""}>${l}</option>`).join("");
+      document.getElementById("taskNotes").value = task?.notes || "";
+      document.getElementById("deleteTaskBtn").style.display = task ? "inline-flex" : "none";
+      document.getElementById("taskModal").classList.add("open");
+    }
+    function bindTaskOpen() {
+      $$("[data-task-id]").forEach(row => {
+        row.onclick = () => {
+          const task = state.tasks.find(t => t.id === row.dataset.taskId);
+          if (canEditTask(task)) openTaskModal(task);
+        };
+      });
+    }
+    function closeModal() { document.getElementById("taskModal").classList.remove("open"); }
+    function closeUserModal() { document.getElementById("userModal").classList.remove("open"); }
+    function empty(text) { return `<div class="empty">${text}</div>`; }
+    function openUserModal(person = null) {
+      if (!canManageUsers()) {
+        alert("เฉพาะ Admin เท่านั้นที่จัดการผู้ใช้ได้");
+        return;
+      }
+      document.getElementById("userModalTitle").textContent = person ? "แก้ไขผู้ใช้" : "เพิ่มผู้ใช้";
+      document.getElementById("userId").value = person?.id || "";
+      document.getElementById("userName").value = person?.name || "";
+      document.getElementById("userEmail").value = person?.email || "";
+      document.getElementById("userRole").value = person?.role || "Staff";
+      document.getElementById("userProject").innerHTML = [
+        `<option value="-">-</option>`,
+        ...state.projects.map(project => `<option value="${project.name}">${project.name}</option>`)
+      ].join("");
+      document.getElementById("userProject").value = person?.project || "-";
+      document.getElementById("userColor").value = person?.color || COLORS[state.people.length % COLORS.length];
+      document.getElementById("userOnline").value = String(Boolean(person?.online));
+      document.getElementById("userModal").classList.add("open");
+    }
+    function deleteUser(id) {
+      if (!canManageUsers()) {
+        alert("เฉพาะ Admin เท่านั้นที่ลบผู้ใช้ได้");
+        return;
+      }
+      const person = state.people.find(p => p.id === id);
+      if (!person) return;
+      const assignedTasks = state.tasks.filter(task => task.owner === person.name);
+      let message = `ลบผู้ใช้ ${person.name}?`;
+      const fallback = state.people.find(p => p.id !== id);
+      if (assignedTasks.length && fallback) {
+        message += `\nงาน ${assignedTasks.length} รายการจะถูกย้ายไปให้ ${fallback.name}`;
+      } else if (assignedTasks.length) {
+        message += `\nงาน ${assignedTasks.length} รายการจะไม่มีผู้รับผิดชอบ`;
+      }
+      if (!confirm(message)) return;
+      state.tasks = state.tasks.map(task => task.owner === person.name ? { ...task, owner: fallback?.name || "" } : task);
+      state.people = state.people.filter(p => p.id !== id);
+      save();
+      render();
+    }
+    function deleteCurrentTask() {
+      const id = document.getElementById("taskId").value;
+      if (!id) return;
+      const task = state.tasks.find(item => item.id === id);
+      if (!canEditTask(task)) {
+        alert("บทบาทนี้ลบงานนี้ไม่ได้");
+        return;
+      }
+      if (!task || !confirm(`ลบงาน "${task.title}"?`)) return;
+      state.tasks = state.tasks.filter(item => item.id !== id);
+      save();
+      closeModal();
+      render();
+    }
+    function addProject() {
+      if (!canManageProjects()) {
+        alert("บทบาทนี้เพิ่มโปรเจกต์ไม่ได้");
+        return;
+      }
+      const name = prompt("ชื่อโปรเจกต์ใหม่");
+      if (!name) return;
+      state.projects.push({ id: crypto.randomUUID(), name, desc: "โปรเจกต์ใหม่", color: COLORS[state.projects.length % COLORS.length], active: true });
+      save();
+      render();
+    }
+    function editProject(id) {
+      if (!canManageProjects()) {
+        alert("บทบาทนี้แก้ไขโปรเจกต์ไม่ได้");
+        return;
+      }
+      const project = state.projects.find(p => p.id === id);
+      const name = prompt("แก้ไขชื่อโปรเจกต์", project.name);
+      if (!name) return;
+      state.tasks.forEach(task => { if (task.project === project.name) task.project = name; });
+      state.people.forEach(person => { if (person.project === project.name) person.project = name; });
+      project.name = name;
+      save();
+      render();
+    }
+    function deleteProject(id) {
+      if (!canManageProjects()) {
+        alert("บทบาทนี้ลบโปรเจกต์ไม่ได้");
+        return;
+      }
+      const project = state.projects.find(p => p.id === id);
+      if (!project || projectStats(project.name).total > 0) {
+        alert("โปรเจกต์นี้ยังมีงานอยู่ จึงยังลบไม่ได้");
+        return;
+      }
+      state.projects = state.projects.filter(p => p.id !== id);
+      save();
+      render();
+    }
+    function resetData() {
+      if (!canManageUsers()) {
+        alert("เฉพาะ Admin เท่านั้นที่รีเฟรชข้อมูลได้");
+        return;
+      }
+      if (!confirm("รีเฟรชข้อมูลตัวอย่างกลับค่าเริ่มต้น?")) return;
+      localStorage.removeItem("taskflow.tasks");
+      localStorage.removeItem("taskflow.projects");
+      localStorage.removeItem("taskflow.people");
+      state.tasks = loadTasks();
+      state.projects = loadProjects();
+      state.people = loadPeople();
+      render();
+    }
+    function exportCsv() {
+      const header = ["ชื่องาน","โปรเจกต์","ผู้รับผิดชอบ","กำหนด","สถานะ","ความสำคัญ"];
+      const lines = [header, ...state.tasks.map(t => [t.title,t.project,t.owner,t.due,statusLabel(t.status),priorityLabel(t.priority)])]
+        .map(row => row.map(cell => `"${String(cell).replaceAll('"','""')}"`).join(",")).join("\n");
+      const blob = new Blob(["\uFEFF" + lines], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "taskflow-tasks.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function setupAuth() {
+      document.getElementById("demoAccounts").innerHTML = AUTH_USERS.map(user =>
+        `<button type="button" class="demo-account" data-demo-user="${user.username}">${user.username}</button>`
+      ).join("");
+      $$("[data-demo-user]").forEach(button => {
+        button.onclick = () => {
+          document.getElementById("loginUsername").value = button.dataset.demoUser;
+          document.getElementById("loginPassword").value = "demo123";
+          document.getElementById("loginError").classList.remove("show");
+        };
+      });
+      document.getElementById("loginForm").onsubmit = event => {
+        event.preventDefault();
+        const username = document.getElementById("loginUsername").value.trim().toLowerCase();
+        const password = document.getElementById("loginPassword").value;
+        const user = AUTH_USERS.find(account => account.username === username);
+        if (!user || password !== "demo123") {
+          document.getElementById("loginError").classList.add("show");
+          return;
+        }
+        loginAs(user);
+      };
+      document.getElementById("googleLogin").onclick = () => loginAs(AUTH_USERS[0]);
+      document.getElementById("switchGoogle").onclick = event => {
+        event.preventDefault();
+        document.getElementById("loginUsername").value = "";
+        document.getElementById("loginPassword").value = "";
+        document.getElementById("loginUsername").focus();
+      };
+      document.querySelector(".logout").onclick = logout;
+      if (state.currentUser) {
+        document.body.classList.add("authenticated");
+        render();
+      } else {
+        document.body.classList.remove("authenticated");
+      }
+    }
+    function loginAs(user) {
+      state.currentUser = user;
+      sessionStorage.setItem("taskflow.currentUser", JSON.stringify({ username: user.username }));
+      document.body.classList.add("authenticated");
+      document.getElementById("loginError").classList.remove("show");
+      render();
+    }
+    function logout() {
+      sessionStorage.removeItem("taskflow.currentUser");
+      state.currentUser = null;
+      document.body.classList.remove("authenticated");
+      document.getElementById("loginPassword").value = "";
+      document.getElementById("loginUsername").focus();
+    }
+
+    document.getElementById("taskForm").onsubmit = event => {
+      event.preventDefault();
+      const id = document.getElementById("taskId").value;
+      const payload = {
+        title: document.getElementById("taskTitle").value.trim(),
+        project: document.getElementById("taskProject").value,
+        owner: document.getElementById("taskOwner").value,
+        due: document.getElementById("taskDue").value,
+        status: document.getElementById("taskStatus").value,
+        priority: document.getElementById("taskPriority").value,
+        notes: document.getElementById("taskNotes").value.trim()
+      };
+      const existingTask = id ? state.tasks.find(task => task.id === id) : null;
+      if (id && !canEditTask(existingTask)) {
+        alert("บทบาทนี้แก้ไขงานนี้ไม่ได้");
+        return;
+      }
+      if (!id && !canCreateTask()) {
+        alert("บทบาทนี้เพิ่มงานไม่ได้");
+        return;
+      }
+      if (can("manageOwnTasks") && !can("manageTasks") && payload.owner !== state.currentUser?.name) {
+        alert("Staff เพิ่มหรือแก้ไขได้เฉพาะงานของตัวเอง");
+        return;
+      }
+      if (!payload.owner) {
+        alert("กรุณาเพิ่มพนักงานก่อนสร้างงาน");
+        return;
+      }
+      if (id) {
+        state.tasks = state.tasks.map(task => task.id === id ? { ...task, ...payload } : task);
+      } else {
+        state.tasks.unshift({ id: crypto.randomUUID(), createdAt: Date.now(), ...payload });
+      }
+      save();
+      closeModal();
+      render();
+    };
+    document.getElementById("userForm").onsubmit = event => {
+      event.preventDefault();
+      if (!canManageUsers()) {
+        alert("เฉพาะ Admin เท่านั้นที่จัดการผู้ใช้ได้");
+        return;
+      }
+      const id = document.getElementById("userId").value;
+      const oldPerson = state.people.find(person => person.id === id);
+      const payload = {
+        name: document.getElementById("userName").value.trim(),
+        email: document.getElementById("userEmail").value.trim(),
+        role: document.getElementById("userRole").value,
+        project: document.getElementById("userProject").value,
+        color: document.getElementById("userColor").value,
+        online: document.getElementById("userOnline").value === "true",
+        active: true
+      };
+      if (!payload.name || !payload.email) return;
+      const duplicatedName = state.people.some(person => person.id !== id && person.name === payload.name);
+      if (duplicatedName) {
+        alert("มีชื่อผู้ใช้นี้อยู่แล้ว");
+        return;
+      }
+      if (id) {
+        state.people = state.people.map(person => person.id === id ? { ...person, ...payload } : person);
+        if (oldPerson && oldPerson.name !== payload.name) {
+          state.tasks = state.tasks.map(task => task.owner === oldPerson.name ? { ...task, owner: payload.name } : task);
+        }
+      } else {
+        state.people.push({ id: crypto.randomUUID(), ...payload });
+      }
+      save();
+      closeUserModal();
+      render();
+    };
+    document.getElementById("deleteTaskBtn").onclick = deleteCurrentTask;
+    $$("[data-close]").forEach(btn => btn.onclick = closeModal);
+    $$("[data-user-close]").forEach(btn => btn.onclick = closeUserModal);
+    document.getElementById("taskModal").addEventListener("click", event => {
+      if (event.target.id === "taskModal") closeModal();
+    });
+    document.getElementById("userModal").addEventListener("click", event => {
+      if (event.target.id === "userModal") closeUserModal();
+    });
+    $$(".nav-item[data-page]").forEach(btn => {
+      btn.onclick = () => {
+        state.page = btn.dataset.page;
+        render();
+      };
+    });
+
+    function render() {
+      renderShell();
+      $$(".page").forEach(page => page.classList.toggle("active", page.id === state.page));
+      if (state.page === "dashboard") renderDashboard();
+      if (state.page === "tasks") renderTasks();
+      if (state.page === "calendar") renderCalendar();
+      if (state.page === "reports") renderReports();
+      if (state.page === "projects") renderProjects();
+      if (state.page === "settings") renderSettings();
+    }
+
+    setupAuth();
+  </script>
+</body>
+</html>
